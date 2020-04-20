@@ -33,4 +33,16 @@ reason: consecutive trees cannot have the same height
 
 Given a sequence of physical trees in a garden, what is the minimum number of physical trees which must be cropped/cut in order to achieve the pattern desired by that gardener?
 
-[Solution](aesthetic_tree_cutting.py)
+
+### Solution(s)
+
+* [an easy to understand solution](aesthetic_tree_cutting/functional.py)
+* [a memory efficient solutiuon](aesthetic_tree_cutting/iterative.py)
+
+
+## Closing thoughts
+
+Usually, when solving such problems for programming interviews, there is
+not enough time to write an optimal solution. So why do people choose to
+test your skills this way ?
+
