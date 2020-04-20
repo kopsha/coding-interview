@@ -65,8 +65,6 @@ Why are some websites asking for your permission to use cookies?
 The cookies on the respective site might be used on other websites as well. For instance if some website uses the js facebook api, it will send the cookies to facebook as well and they might use your private data. 
 
 
-----
-
 
 ## Closing thoughts
 
