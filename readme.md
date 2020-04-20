@@ -58,11 +58,12 @@ alternative version which you can solve
   ```python
     from random import shuffle
 
+    a = list(range(9, 1, -1))
+
     def is_sorted(a):
         return all([a[i] <= a[i+1] for i in range(len(a)-1)])
 
     steps = 0
-    a = list(range(9, 1, -1))
     while not is_sorted(a):
         shuffle(a)
         steps += 1
