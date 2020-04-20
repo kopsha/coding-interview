@@ -46,11 +46,25 @@ During an interview there is very little time to find and implement an optimal
 solution, so I am more interested in how the candidate approaches a difficult
 (maybe impossible) task and here's how you can gain some points:
 * first, identify what kind of problem is it: path finding, sorting, merging, exploring, computation
-  * maybe this problem be solved with classical algorithms, explain which
+  * maybe this problem can be solved with classical algorithms, explain which
   one and how it works?
 * break down the big problem into smaller / simpler parts (remember "divide et impera" ?)
-  * solve at least one part of the problem
-* if the problem is apparently overwhelming, propose a simpler
+  * if the problem is apparently overwhelming, propose a simpler
 alternative version which you can solve
 * classify your solution time complexity
   * if your solution is not optimal, describe how the optimal should look like
+* if you have time, offer another solution (even if is less efficient)
+  * here's the funniest example I have ever seen for sorting a list
+  ```python
+    def is_sorted(a):
+        return all([a[i] <= a[i+1] for i in range(len(a)-1)])
+
+    steps = 0
+    a = list(range(9, 1, -1))
+    while not is_sorted(a):
+        shuffle(a)
+        steps += 1
+
+    print(f'{a} was sorted in {steps} iterations.')
+
+  ```
