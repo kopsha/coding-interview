@@ -1,7 +1,5 @@
 import timeit
 from datetime import datetime
-from random import shuffle
-
 
 def print_stage(text, row_size=80):
     filler = ' ' * (row_size - 4 - len(text))
@@ -114,18 +112,6 @@ def validate():
 
 
 def main():
-
-    def is_sorted(a):
-        return all([a[i] <= a[i+1] for i in range(len(a)-1)])
-
-    steps = 0
-    a = list(range(9, 1, -1))
-    while not is_sorted(a):
-        shuffle(a)
-        steps += 1
-
-    print(f'{a} was sorted in {steps} iterations.')
-    return
 
     if not validate():
         print_stage('invalid, try again...')

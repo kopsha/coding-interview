@@ -56,6 +56,8 @@ alternative version which you can solve
 * if you have time, offer another solution (even if is less efficient)
   * here's the funniest example I have ever seen for sorting a list
   ```python
+    from random import shuffle
+
     def is_sorted(a):
         return all([a[i] <= a[i+1] for i in range(len(a)-1)])
 
@@ -66,5 +68,4 @@ alternative version which you can solve
         steps += 1
 
     print(f'{a} was sorted in {steps} iterations.')
-
   ```
