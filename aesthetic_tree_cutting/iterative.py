@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from itertools import islice
 
 def solution(A):
@@ -89,3 +91,4 @@ def get_sign(e):
 # import timeit
 # n = 10
 # print(timeit.timeit("solution(rez)", number=n, setup="from random import randint;rez = [randint(2, 20) for _ in range(1_000_000)];from __main__ import solution") / n)
+
