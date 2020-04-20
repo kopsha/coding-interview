@@ -39,6 +39,22 @@ Given a sequence of physical trees in a garden, what is the minimum number of ph
 * [an easy to understand solution](aesthetic_tree_cutting/functional.py)
 * [a memory efficient solutiuon](aesthetic_tree_cutting/iterative.py)
 
+## Questions:
+
+### Question:
+\#PYTHON How would you implement the property decorator ?
+### Answer(s)
+Return a descriptor that holds the initial method and when accessed it calls the initial method injecting the received object instead of the self argument.
+
+### Question:
+\#PYTHON How would you implement a class that makes requests to a remote server that exposes some procedures? The api should look like this. When a method of the object is called:  ```my_class_instance.some_method()``` the instance should call the procedure named ```some_method``` on the remote server.
+### Answer(s)
+Override the ```__getattr__``` and return a dynamic created function that calls the wanted procedure using the received name.   
+
+### Question:
+Why are some websites asking for your permission to use cookies?
+### Answer(s)
+The cookies on the respective site might be used on other websites as well. For instance if some website uses the js facebook api, it will send the cookies to facebook as well and they might use your private data. 
 
 ## Closing thoughts
 
@@ -58,11 +74,12 @@ alternative version which you can solve
   ```python
     from random import shuffle
 
+    a = list(range(9, 1, -1))
+
     def is_sorted(a):
         return all([a[i] <= a[i+1] for i in range(len(a)-1)])
 
     steps = 0
-    a = list(range(9, 1, -1))
     while not is_sorted(a):
         shuffle(a)
         steps += 1
