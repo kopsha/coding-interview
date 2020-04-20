@@ -42,7 +42,15 @@ Given a sequence of physical trees in a garden, what is the minimum number of ph
 
 ## Closing thoughts
 
-Usually, when solving such problems for programming interviews, there is
-not enough time to write an optimal solution. So why do people choose to
-test your skills this way ?
-
+During an interview there is very little time to find and implement an optimal
+solution, so I am more interested in how the candidate approaches a difficult
+(maybe impossible) task and here's how you can gain some points:
+* first, identify what kind of problem is it: path finding, sorting, merging, exploring, computation
+  * maybe this problem be solved with classical algorithms, explain which
+  one and how it works?
+* break down the big problem into smaller / simpler parts (remember "divide et impera" ?)
+  * solve at least one part of the problem
+* if the problem is apparently overwhelming, propose a simpler
+alternative version which you can solve
+* classify your solution time complexity
+  * if your solution is not optimal, describe how the optimal should look like
