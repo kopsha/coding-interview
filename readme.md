@@ -31,17 +31,9 @@ alternative version which you can solve
 * if you have time, offer another solution (even if is less efficient)
   * here's the funniest example I have ever seen for sorting a list
   ```python
-    from random import shuffle
-
-    a = list(range(9, 1, -1))
-
     def is_sorted(a):
         return all([a[i] <= a[i+1] for i in range(len(a)-1)])
 
-    steps = 0
     while not is_sorted(a):
         shuffle(a)
-        steps += 1
-
-    print(f'{a} was sorted in {steps} iterations.')
   ```
