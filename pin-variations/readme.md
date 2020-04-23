@@ -13,10 +13,10 @@ variations of the observed pin. The pin can have any length.
 _Example_:
 ```python
 keyboard = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9],
-    [*, 0, #],
+    ['1', '2', '3'],
+    ['4', '5', '6'],
+    ['7', '8', '9'],
+    ['*', '0', '#'],
 ]
 
 Reported_pin = '13'
