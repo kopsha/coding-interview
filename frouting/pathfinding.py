@@ -288,8 +288,8 @@ def join_target_pins(data, target):
     for left, right in zip(target_nodes[:-1], target_nodes[1:]):    
         path, distance = dijkstra(g, v.index(left), v.index(right))
         if distance == float('inf'):
-            print(f'no path found from {left} to {right}, for pin {target}')
-            continue
+            #print(f'no path found from {left} to {right}, for pin {target}')
+            return masked_data, True
         # paint the solution
         for lx, rx in zip(path[:-1], path[1:]):
             left = v[lx]
@@ -299,7 +299,7 @@ def join_target_pins(data, target):
                 i,j = n
                 masked_data[i][j] = target
 
-    return masked_data
+    return masked_data, False
 
 def scan_target_set(data):
     result = set()
@@ -330,18 +330,28 @@ def main():
     print(f'shape: {rows} x {cols}')
 
     targets = list(scan_target_set(original_data))
-    shuffle(targets)
-    print('target set: ', targets)
-
-    for t in targets:
-        data = join_target_pins(data, t)
 
     fig, (ax0, ax1) = plt.subplots(1, 2)
+    fail_count = 0
+    good_count = 0
 
-    ax0.matshow(original_data)
-    ax1.matshow(data)
+    for _ in range(9):
+        data = copy.deepcopy(original_data)
+        shuffle(targets)
+        print('target set: ', targets)
 
-    plt.show()
+        for t in targets:
+            data, some_failed = join_target_pins(data, t)
+
+
+        if fail_count == 0:
+            good_count += 1
+
+        ax0.matshow(original_data)
+        ax1.matshow(data)
+        fig.savefig(f'solution_{good_count+fail_count:03}.png')
+
+    print(f'good / fails: {good_count} vs {fail_count}')
 
 
 if __name__ == '__main__':
