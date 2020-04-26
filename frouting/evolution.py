@@ -72,26 +72,35 @@ WALL_MARK = -1
 
 def main():
 
-    data = []
-    with open('Step_Two.csv', newline='') as csvfile:
-        content = csv.reader(csvfile, delimiter=',')
-        for row in content:
-            data.append( list(map(lambda x: WALL_MARK if x == 'Z' else int(x), row)) )
+    data_files = [
+        'step_one.csv',
+        'step_one_solved.csv',
+        'step_two.csv',
+        'step_two_solved.csv',
+        'step_three.csv',
+    ]
 
-    print_stage('input data')
-    original_data = copy.deepcopy(data)
-    rows = len(original_data)
-    assert rows > 1
-    cols = len(original_data[0])
-    assert cols > 1
-    print(f'shape: {rows} x {cols}')
+    for filename in data_files:
+        print_stage(filename)
+        data = []
+        with open(filename, newline='') as csvfile:
+            content = csv.reader(csvfile, delimiter=',')
+            for row in content:
+                data.append( list(map(lambda x: WALL_MARK if x == 'Z' else int(x), row)) )
 
-    targets = list(scan_target_set(original_data))
+        original_data = copy.deepcopy(data)
+        rows = len(original_data)
+        assert rows > 1
+        cols = len(original_data[0])
+        assert cols > 1
+        print(f'shape: {rows} x {cols}')
 
-    fig, (ax0, ax1) = plt.subplots(1, 2)
-    ax0.matshow(original_data)
-    ax1.matshow(data)
-    fig.savefig(f'solutions/evolution.png')
+        targets = list(scan_target_set(original_data))
+
+        fig, (ax0, ax1) = plt.subplots(1, 2)
+        ax0.matshow(original_data)
+        ax1.matshow(data)
+        fig.savefig(f'solutions/evo_{filename.rstrip(".csv")}.png')
 
 
 if __name__ == '__main__':
