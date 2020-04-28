@@ -212,6 +212,61 @@ def group_nodes_in_regions(layout, nodes):
     return regions
 
 
+
+
+def search_solution(layout, target, target_nodes):
+    import pathfinding
+
+    def get_left_node(data, node, target):
+        i, j = node
+        j -= 1
+        return (i, j) if (j >= 0) and (data[i][j] == target) else None
+
+    def get_top_node(data, node, target):
+        i, j = node
+        i -= 1
+        return (i, j) if (i >= 0) and (data[i][j] == target) else None
+
+    mdata, rows, cols = layout
+
+    # assume target zone is connected
+    vertices = []
+    edges = []
+    for i, row in enumerate(mdata):
+        for j, value in enumerate(row):
+            node = (i, j)
+            if value == target:
+                vertices.append(node)
+                left_node = get_left_node(mdata, node, target)
+                if left_node is not None:
+                    edges.append( (left_node, node, 1) )
+                top_node = get_top_node(mdata, node, target)
+                if top_node is not None:
+                    edges.append( (top_node, node, 1) )
+
+
+    g = pathfinding.GraphUndirectedWeighted( len(vertices) )
+    for edge in edges:
+        left, right, dist = edge
+        g.add_edge( vertices.index(left), vertices.index(right), dist )
+        g.add_edge( vertices.index(right), vertices.index(left), dist )
+
+    t_nodes = target_nodes[target]
+    for left, right in zip(t_nodes[:-1], t_nodes[1:]):    
+        path, distance = pathfinding.dijkstra(g, vertices.index(left), vertices.index(right))
+        if distance == float('inf'):
+            print('no route found for target', target, ', nodes', left, right)
+        else:
+            for ndx, node in enumerate(vertices):
+                i, j = node
+                if ndx in path:
+                    mdata[i][j] = target
+                else:
+                    mdata[i][j] = 0
+
+    return mdata
+
+
 def evolve(layout, target_nodes):
     data, rows, cols = layout
 
@@ -222,18 +277,30 @@ def evolve(layout, target_nodes):
             node = (i, j)
             if value == 0:
                 nt_val, dist = nearest_target(node, target_nodes)
-                nbs = set(boxed_labels(layout, node)) - {0, WALL_MARK}
+                nbs = set(boxed_labels(layout, node)) - {0, TEMP_WALL_MARK, WALL_MARK}
                 if len(nbs) > 1:
-                    updates[node].append( WALL_MARK )
-                    pass
+                    updates[node].append( TEMP_WALL_MARK )
                 else:
                     updates[node].append( nt_val )
+
 
     # perform updates
     mdata = copy.deepcopy(data)
     for node, update in updates.items():
         i, j = node
         mdata[i][j] = update.pop()
+
+
+    for target in [1, 2, 3, 4, 5]:
+        mlayout = (mdata, rows, cols)
+        mdata = search_solution(mlayout, target, target_nodes)
+
+
+    for i, row in enumerate(mdata):
+        for j, value in enumerate(row):
+            node = (i, j)
+            if value == TEMP_WALL_MARK:
+                mdata[i][j] = 0
 
     return mdata
 
@@ -259,6 +326,7 @@ def evolve_back(layout, target_nodes):
 
 
 WALL_MARK = -1
+TEMP_WALL_MARK = -2
 
 def main():
 
