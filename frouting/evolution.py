@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 
-import timeit
 from datetime import datetime
 
-import csv
 import copy
+import csv
 import math
-import matplotlib.pyplot as plt
-
-from collections import deque
-from collections import defaultdict
-from collections import namedtuple
-from random import shuffle
-from operator import mul
-from functools import reduce
 import math
 import random
-
 import statistics
+import timeit
+
+
+from collections import defaultdict
+from collections import deque
+from collections import namedtuple
+from functools import reduce
+from operator import mul
+
 import pathfinding
+
+import matplotlib.pyplot as plt
 
 
 def print_stage(text, row_size=80):
@@ -30,7 +31,6 @@ def print_stage(text, row_size=80):
 
 def mystr(x):
     return '  .' if x == None else f'{x:5.0f}'
-
 
 def print_array(a):
     for row in a:
@@ -118,37 +118,6 @@ def scan_target_nodes(layout, targets):
                 nodes[value].append(node)
 
     return nodes
-
-def inflate_step(layout, target_nodes):
-    data, rows, cols = layout
-    mdata = copy.deepcopy(data)
-    dirty_flag = False
-
-    updates = defaultdict(list)
-
-    for i, row in enumerate(data):
-        for j, value in enumerate(row):
-            node = (i, j)
-            if value == 0:  ## open space
-                nbs = [l for l in crossed_labels(layout, node) if l > 0]
-                nearbys = set(nbs)
-                if len(nearbys) == 1 and len(nbs) == 1:
-                    updates[node].append(nearbys.pop())
-
-    for node, lvalue in updates.items():
-        i, j = node
-        if len(lvalue) != 1:
-            print('more updates: ', lvalue)
-        value = lvalue[0]
-
-        cn = crossed_nodes(layout, node)
-        for cnode in cn:
-            if cnode in updates:
-                mdata[i][j] = WALL_MARK
-            else:
-                mdata[i][j] = value
-
-    return (mdata, rows, cols), bool(updates)
 
 
 def alternator(left, right):
