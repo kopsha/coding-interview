@@ -1,0 +1,4 @@
+set -e
+rm -rf solutions/*
+python3 evolution.py
+
