@@ -30,7 +30,7 @@ def print_stage(text, row_size=80):
 
 
 def mystr(x):
-    return '  .' if x == None else f'{x:5.0f}'
+    return '  .' if x == None else f'{x:3.0f}'
 
 def print_array(a):
     for row in a:
@@ -44,9 +44,10 @@ def boxed_labels(layout, node):
     nb = [
         data[i][j]
         for i,j in [
-            (r-1, c-1), (r-1, c  ), (r-1, c+1),
-            (r  , c-1),             (r  , c+1),
-            (r+1, c-1), (r+1, c  ), (r+1, c+1),
+            (r-1, c-1), (r-1, c  ), (r-1, c+1),     # top row, left to right
+                                    (r  , c+1),     # right node
+            (r+1, c+1), (r+1, c  ), (r+1, c-1),     # bottom row, right to left 
+            (r  , c-1),                             # left node
         ]
         if (0 <= i < rows) and (0 <= j < cols)
     ]
@@ -74,6 +75,21 @@ def crossed_nodes(layout, node):
         for i,j in [
             (r-1, c), (r, c-1),
             (r+1, c), (r, c+1),
+        ]
+        if (0 <= i < rows) and (0 <= j < cols)
+    ]
+    return nb
+
+def boxed_nodes(layout, node):
+    data, rows, cols = layout
+    r,c = node
+    nb = [
+        (i,j)
+        for i,j in [
+            (r-1, c-1), (r-1, c  ), (r-1, c+1),     # top row, left to right
+                                    (r  , c+1),     # right node
+            (r+1, c+1), (r+1, c  ), (r+1, c-1),     # bottom row, right to left 
+            (r  , c-1),                             # left node
         ]
         if (0 <= i < rows) and (0 <= j < cols)
     ]
@@ -216,7 +232,7 @@ def search_solution(layout, sector_layout, target, target_nodes):
     solution = []
     t_nodes = target_nodes[target]
     for left, right in zip(t_nodes[:-1], t_nodes[1:]):
-        print(f'solving target {target}', 'nodes: ', left, right)
+        #print(f'solving target {target}', 'nodes: ', left, right)
         path, dist = pathfinding.dijkstra(g, vertices.index(left), vertices.index(right))
         if dist == float('inf'):
             #print('\tno route found for target', target, ', nodes', left, right)
@@ -225,7 +241,7 @@ def search_solution(layout, sector_layout, target, target_nodes):
         for ndx in path:
             solution.append( vertices[ndx] )
 
-    return solution
+    return solution, dist
 
 
 def apply_target_spectrum(layout, target_nodes):
@@ -264,7 +280,8 @@ def apply_dist_spectrum(layout, target_nodes):
 
 
 def apply_marks_for_target(layout, target, target_nodes):
-    mdata, rows, cols = layout
+    data, rows, cols = layout
+    mdata = copy.deepcopy(data)
 
     for i, row in enumerate(mdata):
         for j, value in enumerate(row):
@@ -348,7 +365,7 @@ def evolve(layout, target_nodes):
             mdata = apply_marks_for_target(mlayout, t, target_nodes)
             #save_figure(mlayout, name_tag=f'marks_for_{t}')
 
-            solution = search_solution(mlayout, sector_layout, t, target_nodes)
+            solution, dist = search_solution(mlayout, sector_layout, t, target_nodes)
 
             # restore mdata
             mdata = copy.deepcopy(data)
@@ -385,6 +402,207 @@ def evolve(layout, target_nodes):
                     layout = (data, rows, cols)
 
     return mdata, len(whaaat.keys()) == len(target_nodes.keys())
+
+
+
+def evolve_two(layout, target_nodes):
+    data, rows, cols = layout
+
+    solved_targets = set()
+    open_targets = set(target_nodes.keys()) - solved_targets
+
+    mdata = copy.deepcopy(data)
+    mlayout = (mdata, rows, cols)
+
+    while open_targets:
+        cost_data = apply_dist_spectrum(mlayout, target_nodes)
+        sector_data = apply_target_spectrum(mlayout, target_nodes)
+        cost_layout = (cost_data, rows, cols)
+        sector_layout = (sector_data, rows, cols)
+
+        solutions = defaultdict(list)
+        distances = defaultdict(float)
+        for t in open_targets:
+            masked_data = apply_marks_for_target(cost_layout, t, target_nodes)
+            masked_layout = (masked_data, rows, cols)
+            #save_figure(masked_layout, name_tag=f'masks-{t}')
+            
+            path, dist = search_solution(masked_layout, sector_layout, t, target_nodes)
+            if path:
+                solutions[t].extend(path)
+                distances[t] += dist
+
+        # should compute path colisions
+        all_paths = defaultdict(set)
+        for t, path in solutions.items():
+            all_paths[t].update(path)
+
+        all_t = set(all_paths.keys())
+        collisions = defaultdict(int)
+        for t in all_paths.keys():
+            all_others = all_t - {t}
+            for other in all_others:
+                collisions[t] += len(all_paths[t] & all_paths[other])
+            distances[t] *= collisions[t]
+
+        t, d = sorted(distances.items(), key=lambda k: k[1])[0]
+        print(f'selected path {t} which has {d} distance and {collisions[t]} collisions.')
+        mdata = mark_path(mlayout, solutions[t], t)
+        mlayout = (mdata, rows, cols)
+        save_figure(mlayout, name_tag=f'increment')
+        solved_targets.add(t)
+            
+        open_targets = set(target_nodes.keys()) - solved_targets
+        if open_targets: print('repeating for ', open_targets)
+
+
+    return mdata
+
+
+def mark_path(mlayout, path, value):
+    mdata, rows, cols = mlayout
+
+    for step in path:
+        i, j = step
+        mdata[i][j] = value
+
+    return mdata
+
+
+def optimize_connected_target(layout, target, target_nodes):
+    data, rows, cols = layout
+
+    cost_data = apply_dist_spectrum(layout, target_nodes)
+    sector_data = apply_target_spectrum(layout, target_nodes)
+
+    cost_layout = (cost_data, rows, cols)
+    #save_figure(cost_layout, name_tag=f'cost-{target}')
+
+    sector_layout = (sector_data, rows, cols)
+    #save_figure(sector_layout, name_tag=f'sectors-{target}')
+
+    mdata = copy.deepcopy(cost_data)
+    mlayout = (mdata, rows, cols)
+    mdata = apply_marks_for_target(mlayout, target, target_nodes)
+    #save_figure(mlayout, name_tag=f'marks-{target}')
+
+    mlayout = (mdata, rows, cols)
+    solution, dist = search_solution(mlayout, sector_layout, target, target_nodes)
+
+    # restore mdata
+    mdata = copy.deepcopy(data)
+    mlayout = (mdata, rows, cols)
+
+    if solution:
+        #print(solution)
+        mdata = mark_path(mlayout, solution, target)
+
+        # clear all inflated nodes
+        for i, row in enumerate(mdata):
+            for j, value in enumerate(row):
+                node = (i, j)
+                if value == target and node not in solution:
+                    mdata[i][j] = 0
+                elif value == TEMP_WALL_MARK:
+                    mdata[i][j] = 0
+
+    return mdata
+
+
+def alt_inflate_regions(layout, open_targets, sector_data):
+    data, rows, cols = layout
+    sector_layout = (sector_data, rows, cols)
+    mdata = copy.deepcopy(data)
+    updates = defaultdict(list)
+
+    for i, row in enumerate(data):
+        for j, value in enumerate(row):
+            node = (i, j)
+            if value == 0:
+                all_neighbours = boxed_labels(layout, node)
+                target_nbs = set(all_neighbours) & open_targets
+                other_nbs = set(all_neighbours) - {0, TEMP_WALL_MARK, WALL_MARK} - open_targets
+
+                if len(target_nbs) == 1 and len(other_nbs) == 0:
+                    value = target_nbs.pop()
+                    updates[node].append(value)
+
+    for node, values in updates.items():
+        i, j = node
+        if len(values) == 1:
+            mdata[i][j] = values.pop()
+
+    return mdata, bool(updates)
+
+def mix_with_costs(layout, target_nodes):
+    data, rows, cols = layout
+
+    cost_data = apply_dist_spectrum(layout, target_nodes)
+    # cost_layout = (cost_data, rows, cols)
+    # save_figure(cost_layout, name_tag=f'cost')
+
+    mdata = copy.deepcopy(data)
+    for i, row in enumerate(data):
+        for j, value in enumerate(row):
+            if value == 0:
+                mdata[i][j] = cost_data[i][j]
+
+    return mdata
+
+
+def mix_with_sectors(layout, target_nodes):
+    data, rows, cols = layout
+
+    sector_data = apply_target_spectrum(layout, target_nodes)
+    #sector_layout = (sector_data, rows, cols)
+    #save_figure(sector_layout, name_tag=f'sector')
+
+    mdata = copy.deepcopy(data)
+    for i, row in enumerate(data):
+        for j, value in enumerate(row):
+            if value == 0:
+                mdata[i][j] = sector_data[i][j]
+
+    return mdata
+
+
+def find_constrained_nodes(layout, target_nodes):
+    data, rows, cols = layout
+
+    mdata = copy.deepcopy(data)
+    dirty = True
+    ss = 0
+
+    # cost_data = apply_dist_spectrum(layout, target_nodes)
+    # cost_layout = (cost_data, rows, cols)
+    # save_figure(cost_layout, name_tag=f'cost')
+
+    sector_data = apply_target_spectrum(layout, target_nodes)
+    sector_layout = (sector_data, rows, cols)
+    save_figure(sector_layout, name_tag=f'sector')
+
+    solved_targets = set()
+
+    while dirty:
+        ss += 1
+        open_targets = set(target_nodes.keys()) - solved_targets
+        mlayout = (mdata, rows, cols)
+        mdata, dirty = alt_inflate_regions(mlayout, open_targets, sector_data)
+
+        mlayout = (mdata, rows, cols)
+        save_figure(mlayout, 'expanded')
+
+        connex = scan_connected_targets(mlayout, target_nodes)
+        new_only = set(connex) - solved_targets
+        if new_only:
+            for t in new_only:
+                mdata = optimize_connected_target(mlayout, t, target_nodes)
+                mlayout = (mdata, rows, cols)
+                save_figure(mlayout, 'reduced')
+
+            solved_targets |= new_only
+
+    return mdata
 
 WALL_MARK = -1
 TEMP_WALL_MARK = -2
@@ -429,15 +647,19 @@ def main():
 
         solved = False
         cnt = 0
-        while not solved and cnt < 100:
-            mdata, solved = evolve(layout, target_nodes)
+        while not solved and cnt < 1: ## << limit here
+            print(f'run {cnt+1}')
+            #mdata = evolve_two(layout, target_nodes)
+            mdata = find_constrained_nodes(layout, target_nodes)
             data = copy.deepcopy(mdata)
             cnt += 1
 
         fig, (ax0, ax1, ax2) = plt.subplots(1, 3)
+
         ax0.matshow(original_data)
         ax1.matshow(data)
         ax2.matshow(solved_data)
+
         fig.savefig(f'solutions/evo_{filename.rstrip(".csv")}.png')
 
 
