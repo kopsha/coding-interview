@@ -2,11 +2,9 @@
 
 Suppose that you are part of a team that breaks electric locks. The way the
 team operates is that there is a spy that overlooks what pin is introduced
-into the lock’s keyboard and reports it to you.
-
-Unfortunately he is not completely sure that he saw the correct combination
-and all adjacent (vertical and horizontal) keys of a key could be the correct
-key.
+into the lock’s keyboard and reports it to you. Unfortunately he is not
+completely sure that he saw the correct combination and all adjacent
+(vertical and horizontal) keys of a key could be the correct key.
 
 Given a keyboard and a reported pin, your task is to generate all possible
 variations of the observed pin. The pin can have any length.
