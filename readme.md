@@ -8,6 +8,7 @@ interviews.
 
 * [Aesthetic tree cutting](aesthetic_tree_cutting/)
 * [PIN variations](pin-variations/)
+* [Unusual walk](matrix-walker/)
 
 
 ## F.A.Q.
